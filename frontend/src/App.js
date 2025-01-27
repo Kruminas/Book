@@ -16,7 +16,8 @@ function App() {
   const [books, setBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const API_BASE = '/api';
+  const API_BASE = process.env.REACT_APP_API_BASE_URL || '/api';
+
   /**
    * @param {Array} booksData
    * @returns {Array}
