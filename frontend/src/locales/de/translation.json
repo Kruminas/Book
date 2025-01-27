@@ -1,0 +1,25 @@
+{
+    "title": "Zufälliger Buchgenerator",
+    "filters": {
+      "language": "Sprache",
+      "seed": "Saat",
+      "likes": "Gefällt mir",
+      "reviews": "Bewertungen",
+      "enter_seed": "Geben Sie Ihren Saatwert ein",
+      "random_seed": "🔀",
+      "enter_reviews": "Geben Sie Bewertungen ein"
+    },
+    "table": {
+      "number": "#",
+      "isbn": "ISBN",
+      "title": "Titel",
+      "authors": "Autor(en)",
+      "publisher": "Verlag",
+      "likes": "Gefällt mir",
+      "review_count": "Anzahl der Bewertungen"
+    },
+    "loading": "Wird geladen...",
+    "no_more_books": "Keine weiteren Bücher zum Laden.",
+    "no_reviews": "Keine Bewertungen verfügbar."
+  }
+  

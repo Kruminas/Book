@@ -1,0 +1,25 @@
+{
+    "title": "Random Books Generator",
+    "filters": {
+      "language": "Language",
+      "seed": "Seed",
+      "likes": "Likes",
+      "reviews": "Reviews",
+      "enter_seed": "Enter your seed",
+      "random_seed": "🔀",
+      "enter_reviews": "Enter reviews"
+    },
+    "table": {
+      "number": "#",
+      "isbn": "ISBN",
+      "title": "Title",
+      "authors": "Author(s)",
+      "publisher": "Publisher",
+      "likes": "Likes",
+      "review_count": "Review Count"
+    },
+    "loading": "Loading...",
+    "no_more_books": "No more books to load.",
+    "no_reviews": "No reviews available."
+  }
+  

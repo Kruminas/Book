@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@faker-js/faker": "^9.4.0",
+    "axios": "^1.7.9",
+    "axios-retry": "^4.5.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "node-cache": "^5.1.2",
+    "redis": "^4.7.0",
+    "uuid": "^11.0.5"
+  }
+}

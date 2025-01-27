@@ -1,0 +1,25 @@
+{
+    "title": "Générateur de Livres Aléatoires",
+    "filters": {
+      "language": "Langue",
+      "seed": "Graine",
+      "likes": "J'aime",
+      "reviews": "Avis",
+      "enter_seed": "Entrez votre graine",
+      "random_seed": "🔀",
+      "enter_reviews": "Entrez les avis"
+    },
+    "table": {
+      "number": "#",
+      "isbn": "ISBN",
+      "title": "Titre",
+      "authors": "Auteur(s)",
+      "publisher": "Éditeur",
+      "likes": "J'aime",
+      "review_count": "Nombre d'Avis"
+    },
+    "loading": "Chargement...",
+    "no_more_books": "Plus de livres à charger.",
+    "no_reviews": "Aucun avis disponible."
+  }
+  
