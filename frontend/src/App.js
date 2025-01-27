@@ -61,7 +61,7 @@ function App() {
   const translateText = async (text) => {
     try {
       const response = await axios.post(
-        '/api/translate',
+        'http://localhost:3001/api/translate',
         {
           q: text,
           source: 'en',
@@ -108,7 +108,7 @@ function App() {
         page: currentPage.toString(),
       }).toString();
 
-      const response = await fetch(`api/books?${params}`);
+      const response = await fetch(`http://localhost:3001/api/books?${params}`);
       if (!response.ok) {
         throw new Error(`Server error: ${response.status}`);
       }
