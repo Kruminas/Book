@@ -16,7 +16,7 @@ function App() {
   const [books, setBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const API_BASE = 'https://task5book.onrender.com';
+  const API_BASE = '/api';
   /**
    * @param {Array} booksData
    * @returns {Array}

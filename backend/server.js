@@ -4,15 +4,15 @@ const axios = require('axios');
 const { faker } = require('@faker-js/faker');
 const { v4: uuidv4 } = require('uuid');
 const NodeCache = require('node-cache');
+const path = require('path'); // Add this line
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001; // Updated port configuration
 
 const translationCache = new NodeCache({ stdTTL: 86400, checkperiod: 20 });
 
 app.use(cors());
 app.use(express.json());
-
 
 /**
  * @param {string} region
@@ -184,6 +184,14 @@ app.get('/api/books', (req, res) => {
   res.json(books);
 });
 
+// Serve static files from the React frontend app
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+// The "catchall" handler: for any request that doesn't match an API route, send back React's index.html file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+});
+
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
