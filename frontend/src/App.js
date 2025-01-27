@@ -16,7 +16,7 @@ function App() {
   const [books, setBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-
+  const API_BASE = 'https://task5book.onrender.com';
   /**
    * @param {Array} booksData
    * @returns {Array}
@@ -61,7 +61,7 @@ function App() {
   const translateText = async (text) => {
     try {
       const response = await axios.post(
-        'http://localhost:3001/api/translate',
+        `${API_BASE}/api/translate`,
         {
           q: text,
           source: 'en',
@@ -108,7 +108,7 @@ function App() {
         page: currentPage.toString(),
       }).toString();
 
-      const response = await fetch(`http://localhost:3001/api/books?${params}`);
+      const response = await fetch(`${API_BASE}/api/books?${params}`);
       if (!response.ok) {
         throw new Error(`Server error: ${response.status}`);
       }
