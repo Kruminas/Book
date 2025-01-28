@@ -160,11 +160,21 @@ app.get('/api/books', (req, res) => {
     faker.locale = fakerLocale;
     faker.seed(hashCode(combinedSeed));
 
+    // Log the faker.book object
+    console.log('Faker Book Module:', faker.book);
+
+    // Check if faker.book is defined
+    if (!faker.book || typeof faker.book.title !== 'function') {
+      console.error('faker.book.title is not a function. Please check the Faker installation and version.');
+      return res.status(500).json({ error: 'Faker book module is not available.' });
+    }
+
     const booksPerPage = 20;
     const books = [];
 
     for (let i = 0; i < booksPerPage; i++) {
-      const title = faker.lorem.sentence();
+      const title = faker.book.title();
+      console.log(`Generated Title: ${title}`); // Optional: Remove in production
       const author = faker.name.fullName();
       const publisher = faker.company.name();
       const numLikes = fractionalValue(avgLikes);
@@ -175,6 +185,7 @@ app.get('/api/books', (req, res) => {
         const reviewAuthor = faker.name.fullName();
         const reviewText = faker.lorem.paragraph();
 
+        // Log review details
         if (!reviewAuthor || !reviewText) {
           console.error(`Review ${r + 1} for book ${i + 1} is undefined.`);
           // Skip adding this review
@@ -229,6 +240,38 @@ app.get('/api/books', (req, res) => {
     res.status(500).json({ error: 'Failed to generate books' });
   }
 });
+
+// Helper Functions
+function getFakerLocale(region) {
+  switch (region) {
+    case 'en':
+      return 'en_US';
+    case 'fr':
+      return 'fr';
+    case 'de':
+      return 'de';
+    default:
+      return 'en_US';
+  }
+}
+
+function hashCode(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (Math.imul(31, hash) + str.charCodeAt(i)) | 0;
+  }
+  return hash;
+}
+
+function fractionalValue(avg) {
+  const intPart = Math.floor(avg);
+  const fraction = avg - intPart;
+  let val = intPart;
+  if (Math.random() < fraction) {
+    val++;
+  }
+  return val;
+}
 
 // Serve static files from the React frontend app
 app.use(express.static(path.join(__dirname, '../frontend/build')));
