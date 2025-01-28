@@ -186,20 +186,20 @@ function App() {
             {t('filters.seed')}
           </label>
           <div className="input-group">
-          <input
-            id="seed-input"
-            type="text"
-            className="form-control"
-            value={seed}
-            onChange={(e) => {
-              const newSeed = e.target.value;
-              setSeed(newSeed);
-              setPage(1);
-              setBooks([]);
-              setHasMore(true);
-            }}
-            placeholder={t('filters.enter_seed')}
-          />
+            <input
+              id="seed-input"
+              type="text"
+              className="form-control"
+              value={seed}
+              onChange={(e) => {
+                const newSeed = e.target.value;
+                setSeed(newSeed);
+                setPage(1);
+                setBooks([]);
+                setHasMore(true);
+              }}
+              placeholder={t('filters.enter_seed')}
+            />
             <button
               className="btn btn-outline-secondary"
               onClick={handleRandomSeed}
