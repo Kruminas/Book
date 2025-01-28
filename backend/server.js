@@ -1,4 +1,5 @@
 // backend/server.js
+
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -14,7 +15,11 @@ const PORT = process.env.PORT || 3001;
 const translationCache = new NodeCache({ stdTTL: 86400, checkperiod: 20 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://book-1-x5j2.onrender.com', // Replace with your actual frontend URL
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
 app.use(express.json());
 
 /**

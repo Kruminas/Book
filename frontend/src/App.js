@@ -1,4 +1,5 @@
 // frontend/src/App.js
+
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
@@ -130,6 +131,7 @@ function App() {
       }
     } catch (error) {
       console.error('Error fetching books:', error);
+      // Optionally, display an error message to the user here
     } finally {
       setIsLoading(false);
     }
