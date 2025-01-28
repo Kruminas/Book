@@ -126,13 +126,11 @@ function App() {
     setBooks([]);
     setHasMore(true);
     fetchBooks(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedLikes, region, seed, reviews]);
 
   useEffect(() => {
     if (page === 1) return;
     fetchBooks(page);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   const handleScroll = (e) => {
