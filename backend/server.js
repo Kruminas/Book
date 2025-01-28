@@ -157,7 +157,6 @@ app.get('/api/books', (req, res) => {
 
     for (let i = 0; i < booksPerPage; i++) {
       const title = faker.lorem.sentence();
-      console.log(`Generated Title: ${title}`);
       const author = faker.name.fullName();
       const publisher = faker.company.name();
       const numLikes = fractionalValue(avgLikes);
