@@ -22,10 +22,6 @@ function App() {
 
   const debouncedLikes = useDebounce(likes, 500);
 
-  /**
-   * @param {Array} booksData
-   * @returns {Array}
-   */
   const translateBooks = async (booksData) => {
     if (region === 'en') return booksData;
 
@@ -53,15 +49,10 @@ function App() {
       );
       return translatedBooks;
     } catch (error) {
-      console.error('Error translating books:', error);
       return booksData;
     }
   };
 
-  /**
-   * @param {string} text
-   * @returns {string}
-   */
   const translateText = async (text) => {
     try {
       const response = await axios.post(
@@ -78,14 +69,10 @@ function App() {
 
       return response.data.translatedText || text;
     } catch (error) {
-      console.error('Error translating text:', error);
       return text;
     }
   };
 
-  /**
-   * @returns {string}
-   */
   const generateRandomSeed = () => {
     return Math.floor(Math.random() * 10000000).toString();
   };
@@ -99,9 +86,6 @@ function App() {
     setFetchError(null);
   };
 
-  /**
-   * @param {number} currentPage
-   */
   const fetchBooks = async (currentPage) => {
     setIsLoading(true);
     setFetchError(null);
@@ -120,8 +104,6 @@ function App() {
       }
       const data = await response.json();
 
-      console.log('Fetched Data:', data);
-
       if (!Array.isArray(data)) {
         throw new Error('Invalid data format received from server.');
       }
@@ -133,7 +115,6 @@ function App() {
         setBooks((prevBooks) => [...prevBooks, ...translatedBooks]);
       }
     } catch (error) {
-      console.error('Error fetching books:', error);
       setFetchError(error.message);
     } finally {
       setIsLoading(false);
@@ -145,11 +126,15 @@ function App() {
     setBooks([]);
     setHasMore(true);
     fetchBooks(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedLikes, region, seed, reviews]);
 
-  /**
-   * @param {object} e
-   */
+  useEffect(() => {
+    if (page === 1) return;
+    fetchBooks(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
     if (scrollHeight - scrollTop <= clientHeight + 50) {
@@ -159,9 +144,6 @@ function App() {
     }
   };
 
-  /**
-   * @param {string} lng
-   */
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
     setRegion(lng);
@@ -312,10 +294,6 @@ function App() {
   );
 }
 
-/**
- * @param {object} props
- * @returns JSX.Element
- */
 function BookRow({ book, index }) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);

@@ -14,10 +14,6 @@ const translationCache = new NodeCache({ stdTTL: 86400, checkperiod: 20 });
 app.use(cors());
 app.use(express.json());
 
-/**
- * @param {string} region
- * @returns {string}
- */
 function getFakerLocale(region) {
   switch (region) {
     case 'en':
@@ -31,10 +27,6 @@ function getFakerLocale(region) {
   }
 }
 
-/**
- * @param {string} str
- * @returns {number}
- */
 function hashCode(str) {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -43,10 +35,6 @@ function hashCode(str) {
   return hash;
 }
 
-/**
- * @param {number} avg
- * @returns {number}
- */
 function fractionalValue(avg) {
   const intPart = Math.floor(avg);
   const fraction = avg - intPart;
@@ -98,7 +86,6 @@ app.post('/api/translate', async (req, res) => {
         if (response.data && response.data.responseData && response.data.responseData.translatedText) {
           return response.data.responseData.translatedText;
         } else {
-          console.error('Unexpected translation API response structure:', response.data);
           return text;
         }
       });
@@ -121,7 +108,6 @@ app.post('/api/translate', async (req, res) => {
 
     res.json(finalTranslations);
   } catch (error) {
-    console.error('Translation Error:', error.response ? error.response.data : error.message);
     res.status(500).json({ error: 'Translation failed' });
   }
 });
@@ -151,7 +137,6 @@ app.get('/api/books', (req, res) => {
 
     for (let i = 0; i < booksPerPage; i++) {
       const title = faker.lorem.sentence();
-      console.log(`Generated Title: ${title}`);
       const author = faker.name.fullName();
       const publisher = faker.company.name();
       const numLikes = fractionalValue(avgLikes);
@@ -163,7 +148,6 @@ app.get('/api/books', (req, res) => {
         const reviewText = faker.lorem.paragraph();
 
         if (!reviewAuthor || !reviewText) {
-          console.error(`Review ${r + 1} for book ${i + 1} is undefined.`);
           continue;
         }
 
@@ -182,10 +166,6 @@ app.get('/api/books', (req, res) => {
       const safeAuthor = author || 'Unknown Author';
       const safePublisher = publisher || 'Unknown Publisher';
 
-      if (safeTitle === 'Untitled') {
-        console.warn(`Book ${index} has no title.`);
-      }
-
       books.push({
         id: uuidv4(),
         index,
@@ -199,11 +179,8 @@ app.get('/api/books', (req, res) => {
       });
     }
 
-    console.log(`Generated ${books.length} books for page ${pageNum}`);
-
     res.json(books);
   } catch (error) {
-    console.error('Books Generation Error:', error.message);
     res.status(500).json({ error: 'Failed to generate books' });
   }
 });
