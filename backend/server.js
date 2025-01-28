@@ -140,94 +140,25 @@ app.post('/api/translate', async (req, res) => {
  * Books Endpoint
  */
 app.get('/api/books', (req, res) => {
-  const {
-    seed = 'default',
-    page = 1,
-    region = 'en',
-    likes = '0',
-    reviews = '0',
-  } = req.query;
+  const sampleBook = {
+    id: uuidv4(),
+    index: 1,
+    isbn: '123-4567890123',
+    title: 'Sample Book Title',
+    author: 'John Doe',
+    publisher: 'Sample Publisher',
+    likes: 5,
+    reviews: [
+      {
+        author: 'Reviewer One',
+        text: 'Great book!',
+      },
+    ],
+    coverImageUrl: 'https://picsum.photos/seed/123-4567890123/200/300',
+  };
 
-  try {
-    const pageNum = Math.max(1, parseInt(page, 10));
-    const avgLikes = Math.max(0, parseFloat(likes));
-    const avgReviews = Math.max(0, parseFloat(reviews));
-
-    const combinedSeed = `${seed}-${pageNum}`;
-    const fakerLocale = getFakerLocale(region);
-
-    // Set Faker locale and seed
-    faker.locale = fakerLocale;
-    faker.seed(hashCode(combinedSeed));
-
-    const booksPerPage = 20;
-    const books = [];
-
-    for (let i = 0; i < booksPerPage; i++) {
-      const title = faker.book.title();
-      const author = faker.name.fullName();
-      const publisher = faker.company.name();
-      const numLikes = fractionalValue(avgLikes);
-      const numReviews = fractionalValue(avgReviews);
-
-      const bookReviews = [];
-      for (let r = 0; r < numReviews; r++) {
-        const reviewAuthor = faker.name.fullName();
-        const reviewText = faker.lorem.paragraph();
-
-        if (!reviewAuthor || !reviewText) {
-          console.error(`Review ${r + 1} for book ${i + 1} is undefined.`);
-          // Skip adding this review
-          continue;
-        }
-
-        bookReviews.push({
-          author: reviewAuthor,
-          text: reviewText,
-        });
-      }
-
-      let isbn;
-      try {
-        isbn = faker.helpers.unique(() => faker.helpers.replaceSymbols('###-##########'), { maxRetries: 100 });
-      } catch (error) {
-        console.error('Error generating unique ISBN:', error.message);
-        isbn = faker.helpers.replaceSymbols('###-##########');
-      }
-
-      const coverImageUrl = `https://picsum.photos/seed/${isbn}/200/300`;
-      const index = i + 1 + (pageNum - 1) * booksPerPage;
-
-      // Handle undefined fields
-      const safeTitle = title || 'Untitled';
-      const safeAuthor = author || 'Unknown Author';
-      const safePublisher = publisher || 'Unknown Publisher';
-
-      if (safeTitle === 'Untitled') {
-        console.warn(`Book ${index} has no title.`);
-      }
-
-      books.push({
-        id: uuidv4(),
-        index,
-        isbn,
-        title: safeTitle,
-        author: safeAuthor,
-        publisher: safePublisher,
-        likes: numLikes,
-        reviews: bookReviews,
-        coverImageUrl,
-      });
-    }
-
-    // Log generated books for debugging
-    console.log(`Generated ${books.length} books for page ${pageNum}`);
-
-    res.json(books);
-  } catch (error) {
-    console.error('Books Generation Error:', error.message);
-    res.status(500).json({ error: 'Failed to generate books' });
-  }
+  console.log('Sending Sample Book:', sampleBook);
+  res.json([sampleBook]);
 });
 
 // Serve static files from the React frontend app
