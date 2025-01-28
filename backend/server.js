@@ -1,27 +1,27 @@
-// server.js
+// backend/server.js
+
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const { faker } = require('@faker-js/faker');
 const { v4: uuidv4 } = require('uuid');
 const NodeCache = require('node-cache');
+const path = require('path');
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
-// Initialize cache with a TTL of 1 day (86400 seconds)
-const translationCache = new NodeCache({ stdTTL: 86400, checkperiod: 120 });
+// Initialize cache for translations
+const translationCache = new NodeCache({ stdTTL: 86400, checkperiod: 20 });
 
-// Middleware Setup
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Helper Functions
-
 /**
- * Maps frontend region codes to Faker locale codes.
- * @param {string} region - The region code from the frontend (e.g., 'en', 'fr', 'de').
- * @returns {string} - The corresponding Faker locale code.
+ * Get Faker locale based on region
+ * @param {string} region
+ * @returns {string}
  */
 function getFakerLocale(region) {
   switch (region) {
@@ -31,16 +31,15 @@ function getFakerLocale(region) {
       return 'fr';
     case 'de':
       return 'de';
-    // Add more mappings as needed
     default:
-      return 'en_US'; // Default to English (US)
+      return 'en_US';
   }
 }
 
 /**
- * Generates a hash code from a string.
- * @param {string} str - The input string.
- * @returns {number} - The resulting hash code.
+ * Simple hash function for seeding
+ * @param {string} str
+ * @returns {number}
  */
 function hashCode(str) {
   let hash = 0;
@@ -51,9 +50,9 @@ function hashCode(str) {
 }
 
 /**
- * Determines a fractional value based on an average.
- * @param {number} avg - The average value.
- * @returns {number} - The resulting integer value.
+ * Calculate fractional value based on average
+ * @param {number} avg
+ * @returns {number}
  */
 function fractionalValue(avg) {
   const intPart = Math.floor(avg);
@@ -65,33 +64,23 @@ function fractionalValue(avg) {
   return val;
 }
 
-// Translation Proxy Endpoint
-
 /**
- * POST /api/translate
- * Translates text using MyMemory Translation API with caching.
- * Expects a JSON body with { q, source, target }.
+ * Translation Endpoint
  */
 app.post('/api/translate', async (req, res) => {
   const { q, source, target } = req.body;
 
-  // Input Validation
   if (!q || !source || !target) {
     return res.status(400).json({ error: 'Missing required fields: q, source, target' });
   }
 
   try {
-    // Determine if 'q' is an array or a single string
     const isArray = Array.isArray(q);
     const textsToTranslate = isArray ? q : [q];
 
-    // Prepare cache keys
     const cacheKeys = textsToTranslate.map(text => `${source}-${target}-${text}`);
-
-    // Check cache for existing translations
     const cachedTranslations = cacheKeys.map(key => translationCache.get(key));
 
-    // Identify texts that need translation
     const textsToFetch = [];
     const indexesToFetch = [];
 
@@ -105,7 +94,6 @@ app.post('/api/translate', async (req, res) => {
     let fetchedTranslations = [];
 
     if (textsToFetch.length > 0) {
-      // Make API call to MyMemory for texts that are not cached
       const translationPromises = textsToFetch.map(text =>
         axios.get('https://api.mymemory.translated.net/get', {
           params: {
@@ -118,26 +106,22 @@ app.post('/api/translate', async (req, res) => {
       const responses = await Promise.all(translationPromises);
       fetchedTranslations = responses.map(response => response.data.responseData.translatedText);
 
-      // Store fetched translations in cache
       fetchedTranslations.forEach((translatedText, idx) => {
         const cacheKey = cacheKeys[indexesToFetch[idx]];
         translationCache.set(cacheKey, translatedText);
       });
     }
 
-    // Assemble final translations
     let finalTranslations = cachedTranslations.slice();
 
     indexesToFetch.forEach((idx, fetchIdx) => {
       finalTranslations[idx] = fetchedTranslations[fetchIdx];
     });
 
-    // If original 'q' was a single string, return a single translation
     if (!isArray) {
       return res.json({ translatedText: finalTranslations[0] });
     }
 
-    // Otherwise, return the array of translations
     res.json(finalTranslations);
   } catch (error) {
     console.error('Translation Error:', error.response ? error.response.data : error.message);
@@ -145,17 +129,8 @@ app.post('/api/translate', async (req, res) => {
   }
 });
 
-// Books API Endpoint
-
 /**
- * GET /api/books
- * Returns a paginated list of books with optional filters.
- * Query Parameters:
- * - seed: string (default: 'default')
- * - page: number (default: 1)
- * - region: string (e.g., 'en', 'fr', 'de') (default: 'en')
- * - likes: number (default: 0)
- * - reviews: number (default: 0)
+ * Books Endpoint
  */
 app.get('/api/books', (req, res) => {
   const {
@@ -166,67 +141,82 @@ app.get('/api/books', (req, res) => {
     reviews = '0',
   } = req.query;
 
-  const pageNum = Math.max(1, parseInt(page, 10));
-  const avgLikes = Math.max(0, parseFloat(likes));
-  const avgReviews = Math.max(0, parseFloat(reviews));
+  try {
+    const pageNum = Math.max(1, parseInt(page, 10));
+    const avgLikes = Math.max(0, parseFloat(likes));
+    const avgReviews = Math.max(0, parseFloat(reviews));
 
-  const combinedSeed = `${seed}-${pageNum}`;
-  const fakerLocale = getFakerLocale(region);
+    const combinedSeed = `${seed}-${pageNum}`;
+    const fakerLocale = getFakerLocale(region);
 
-  // Set Faker locale and seed for deterministic data
-  faker.locale = fakerLocale;
-  faker.seed(hashCode(combinedSeed));
+    // Set Faker locale and seed
+    faker.locale = fakerLocale;
+    faker.seed(hashCode(combinedSeed));
 
-  console.log(`Locale set to: ${faker.locale}, Seed: ${combinedSeed}`); // Debug log
+    const booksPerPage = 20;
+    const books = [];
 
-  const booksPerPage = 20;
-  const books = [];
+    for (let i = 0; i < booksPerPage; i++) {
+      const title = faker.book.title();
+      const author = faker.name.fullName();
+      const publisher = faker.company.name();
+      const numLikes = fractionalValue(avgLikes);
+      const numReviews = fractionalValue(avgReviews);
 
-  for (let i = 0; i < booksPerPage; i++) {
-    // Generate localized data
-    const title = faker.book.title();
-    const author = faker.person.fullName();
-    const publisher = faker.company.name();
-    const numLikes = fractionalValue(avgLikes);
-    const numReviews = fractionalValue(avgReviews);
+      const bookReviews = [];
+      for (let r = 0; r < numReviews; r++) {
+        bookReviews.push({
+          author: faker.name.fullName(),
+          text: faker.lorem.paragraph(),
+        });
+      }
 
-    const bookReviews = [];
-    for (let r = 0; r < numReviews; r++) {
-      bookReviews.push({
-        author: faker.person.fullName(),
-        text: faker.lorem.paragraph(),
+      let isbn;
+      try {
+        isbn = faker.helpers.unique(() => faker.helpers.replaceSymbols('###-##########'), { maxRetries: 100 });
+      } catch (error) {
+        isbn = faker.helpers.replaceSymbols('###-##########');
+      }
+
+      const coverImageUrl = `https://picsum.photos/seed/${isbn}/200/300`;
+      const index = i + 1 + (pageNum - 1) * booksPerPage;
+
+      // Debugging Logs
+      if (!title) {
+        console.error(`Book ${index} has undefined title.`);
+      }
+
+      books.push({
+        id: uuidv4(),
+        index,
+        isbn,
+        title: title || 'Untitled',
+        author: author || 'Unknown Author',
+        publisher: publisher || 'Unknown Publisher',
+        likes: numLikes,
+        reviews: bookReviews,
+        coverImageUrl,
       });
     }
 
-    // Generate unique ISBN
-    let isbn;
-    try {
-      isbn = faker.unique(() => faker.helpers.replaceSymbols('###-##########'), { maxRetries: 100 });
-    } catch (error) {
-      isbn = faker.helpers.replaceSymbols('###-##########');
-    }
+    // Log generated books for debugging
+    console.log(`Generated ${books.length} books for page ${pageNum}`);
 
-    // Generate a cover image URL based on ISBN
-    const coverImageUrl = `https://picsum.photos/seed/${isbn}/200/300`;
-    const index = i + 1 + (pageNum - 1) * booksPerPage;
-
-    books.push({
-      id: uuidv4(),
-      index,
-      isbn,
-      title,
-      author,
-      publisher,
-      likes: numLikes,
-      reviews: bookReviews,
-      coverImageUrl,
-    });
+    res.json(books);
+  } catch (error) {
+    console.error('Books Generation Error:', error.message);
+    res.status(500).json({ error: 'Failed to generate books' });
   }
-
-  res.json(books);
 });
 
-// Start the Server
+// Serve static files from the React frontend app
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+// The "catchall" handler: for any request that doesn't match an API route, send back React's index.html file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+});
+
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });

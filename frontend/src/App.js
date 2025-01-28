@@ -18,6 +18,7 @@ function App() {
   const [books, setBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [fetchError, setFetchError] = useState(null); // New state for error messages
   const API_BASE = process.env.REACT_APP_API_BASE_URL || '/api';
 
   /**
@@ -100,6 +101,7 @@ function App() {
     setPage(1);
     setBooks([]);
     setHasMore(true);
+    setFetchError(null); // Reset error on new seed
   };
 
   /**
@@ -108,6 +110,7 @@ function App() {
    */
   const fetchBooks = async (currentPage) => {
     setIsLoading(true);
+    setFetchError(null); // Reset error before fetching
     try {
       const params = new URLSearchParams({
         region,
@@ -123,6 +126,10 @@ function App() {
       }
       const data = await response.json();
 
+      if (!Array.isArray(data)) {
+        throw new Error('Invalid data format received from server.');
+      }
+
       if (data.length === 0) {
         setHasMore(false);
       } else {
@@ -131,7 +138,7 @@ function App() {
       }
     } catch (error) {
       console.error('Error fetching books:', error);
-      // Optionally, display an error message to the user here
+      setFetchError(error.message); // Set error message
     } finally {
       setIsLoading(false);
     }
@@ -168,6 +175,7 @@ function App() {
     setPage(1);
     setBooks([]);
     setHasMore(true);
+    setFetchError(null); // Reset error on language change
   };
 
   return (
@@ -211,6 +219,7 @@ function App() {
                 setPage(1);
                 setBooks([]);
                 setHasMore(true);
+                setFetchError(null); // Reset error on seed change
               }}
               placeholder={t('filters.enter_seed')}
             />
@@ -242,6 +251,7 @@ function App() {
               setPage(1);
               setBooks([]);
               setHasMore(true);
+              setFetchError(null); // Reset error on likes change
             }}
           />
         </div>
@@ -262,11 +272,18 @@ function App() {
               setPage(1);
               setBooks([]);
               setHasMore(true);
+              setFetchError(null); // Reset error on reviews change
             }}
             placeholder={t('filters.enter_reviews')}
           />
         </div>
       </div>
+
+      {fetchError && (
+        <div className="alert alert-danger text-center" role="alert">
+          {t('error_fetching_books')}: {fetchError}
+        </div>
+      )}
 
       <div className="table-responsive">
         <table className="table table-striped table-hover align-middle">
