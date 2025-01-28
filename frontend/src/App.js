@@ -20,6 +20,7 @@ function App() {
   const API_BASE = process.env.REACT_APP_API_BASE_URL || '/api';
 
   /**
+   * Translate book data based on selected region
    * @param {Array} booksData
    * @returns {Array}
    */
@@ -56,10 +57,10 @@ function App() {
   };
 
   /**
+   * Translate a single text
    * @param {string} text
    * @returns {string}
    */
-  
   const translateText = async (text) => {
     try {
       const response = await axios.post(
@@ -82,12 +83,16 @@ function App() {
   };
 
   /**
+   * Generate a random seed
    * @returns {string}
    */
   const generateRandomSeed = () => {
     return Math.floor(Math.random() * 10000000).toString();
   };
 
+  /**
+   * Handle random seed generation
+   */
   const handleRandomSeed = () => {
     const randomSeed = generateRandomSeed();
     setSeed(randomSeed);
@@ -97,6 +102,7 @@ function App() {
   };
 
   /**
+   * Fetch books from the backend
    * @param {number} currentPage
    */
   const fetchBooks = async (currentPage) => {
@@ -129,11 +135,16 @@ function App() {
     }
   };
 
+  /**
+   * Effect to fetch books when dependencies change
+   */
   useEffect(() => {
     fetchBooks(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, region, seed, likes, reviews]);
 
   /**
+   * Handle infinite scrolling
    * @param {object} e
    */
   const handleScroll = (e) => {
@@ -146,6 +157,7 @@ function App() {
   };
 
   /**
+   * Change language/region
    * @param {string} lng
    */
   const changeLanguage = (lng) => {
@@ -292,6 +304,11 @@ function App() {
   );
 }
 
+/**
+ * BookRow Component
+ * @param {object} props
+ * @returns JSX.Element
+ */
 function BookRow({ book, index }) {
   const { t } = useTranslation();
   const [isExpanded, setIsExpanded] = useState(false);

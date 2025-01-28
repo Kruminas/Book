@@ -10,12 +10,15 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Initialize cache for translations
 const translationCache = new NodeCache({ stdTTL: 86400, checkperiod: 20 });
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
 /**
+ * Get Faker locale based on region
  * @param {string} region
  * @returns {string}
  */
@@ -33,6 +36,7 @@ function getFakerLocale(region) {
 }
 
 /**
+ * Simple hash function for seeding
  * @param {string} str
  * @returns {number}
  */
@@ -45,6 +49,7 @@ function hashCode(str) {
 }
 
 /**
+ * Calculate fractional value based on average
  * @param {number} avg
  * @returns {number}
  */
@@ -58,6 +63,9 @@ function fractionalValue(avg) {
   return val;
 }
 
+/**
+ * Translation Endpoint
+ */
 app.post('/api/translate', async (req, res) => {
   const { q, source, target } = req.body;
 
@@ -70,7 +78,6 @@ app.post('/api/translate', async (req, res) => {
     const textsToTranslate = isArray ? q : [q];
 
     const cacheKeys = textsToTranslate.map(text => `${source}-${target}-${text}`);
-
     const cachedTranslations = cacheKeys.map(key => translationCache.get(key));
 
     const textsToFetch = [];
@@ -121,6 +128,9 @@ app.post('/api/translate', async (req, res) => {
   }
 });
 
+/**
+ * Books Endpoint
+ */
 app.get('/api/books', (req, res) => {
   const {
     seed = 'default',
@@ -138,7 +148,7 @@ app.get('/api/books', (req, res) => {
     const combinedSeed = `${seed}-${pageNum}`;
     const fakerLocale = getFakerLocale(region);
 
-    // Change from setLocale to directly setting faker.locale
+    // Set Faker locale and seed
     faker.locale = fakerLocale;
     faker.seed(hashCode(combinedSeed));
 
@@ -182,6 +192,9 @@ app.get('/api/books', (req, res) => {
         coverImageUrl,
       });
     }
+
+    // Log generated books for debugging
+    console.log(`Generated ${books.length} books for page ${pageNum}`);
 
     res.json(books);
   } catch (error) {
