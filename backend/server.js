@@ -1,3 +1,4 @@
+// backend/server.js
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -137,7 +138,8 @@ app.get('/api/books', (req, res) => {
     const combinedSeed = `${seed}-${pageNum}`;
     const fakerLocale = getFakerLocale(region);
 
-    faker.setLocale(fakerLocale);
+    // Change from setLocale to directly setting faker.locale
+    faker.locale = fakerLocale;
     faker.seed(hashCode(combinedSeed));
 
     const booksPerPage = 20;
