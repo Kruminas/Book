@@ -129,58 +129,63 @@ app.get('/api/books', (req, res) => {
     reviews = '0',
   } = req.query;
 
-  const pageNum = Math.max(1, parseInt(page, 10));
-  const avgLikes = Math.max(0, parseFloat(likes));
-  const avgReviews = Math.max(0, parseFloat(reviews));
+  try {
+    const pageNum = Math.max(1, parseInt(page, 10));
+    const avgLikes = Math.max(0, parseFloat(likes));
+    const avgReviews = Math.max(0, parseFloat(reviews));
 
-  const combinedSeed = `${seed}-${pageNum}`;
-  const fakerLocale = getFakerLocale(region);
+    const combinedSeed = `${seed}-${pageNum}`;
+    const fakerLocale = getFakerLocale(region);
 
-  faker.locale = fakerLocale;
-  faker.seed(hashCode(combinedSeed));
+    faker.setLocale(fakerLocale);
+    faker.seed(hashCode(combinedSeed));
 
-  const booksPerPage = 20;
-  const books = [];
+    const booksPerPage = 20;
+    const books = [];
 
-  for (let i = 0; i < booksPerPage; i++) {
-    const title = faker.book.title();
-    const author = faker.name.fullName();
-    const publisher = faker.company.name();
-    const numLikes = fractionalValue(avgLikes);
-    const numReviews = fractionalValue(avgReviews);
+    for (let i = 0; i < booksPerPage; i++) {
+      const title = faker.book.title();
+      const author = faker.name.fullName();
+      const publisher = faker.company.name();
+      const numLikes = fractionalValue(avgLikes);
+      const numReviews = fractionalValue(avgReviews);
 
-    const bookReviews = [];
-    for (let r = 0; r < numReviews; r++) {
-      bookReviews.push({
-        author: faker.name.fullName(),
-        text: faker.lorem.paragraph(),
+      const bookReviews = [];
+      for (let r = 0; r < numReviews; r++) {
+        bookReviews.push({
+          author: faker.name.fullName(),
+          text: faker.lorem.paragraph(),
+        });
+      }
+
+      let isbn;
+      try {
+        isbn = faker.helpers.unique(() => faker.helpers.replaceSymbols('###-##########'), { maxRetries: 100 });
+      } catch (error) {
+        isbn = faker.helpers.replaceSymbols('###-##########');
+      }
+
+      const coverImageUrl = `https://picsum.photos/seed/${isbn}/200/300`;
+      const index = i + 1 + (pageNum - 1) * booksPerPage;
+
+      books.push({
+        id: uuidv4(),
+        index,
+        isbn,
+        title,
+        author,
+        publisher,
+        likes: numLikes,
+        reviews: bookReviews,
+        coverImageUrl,
       });
     }
 
-    let isbn;
-    try {
-      isbn = faker.helpers.unique(() => faker.helpers.replaceSymbols('###-##########'), { maxRetries: 100 });
-    } catch (error) {
-      isbn = faker.helpers.replaceSymbols('###-##########');
-    }
-
-    const coverImageUrl = `https://picsum.photos/seed/${isbn}/200/300`;
-    const index = i + 1 + (pageNum - 1) * booksPerPage;
-
-    books.push({
-      id: uuidv4(),
-      index,
-      isbn,
-      title,
-      author,
-      publisher,
-      likes: numLikes,
-      reviews: bookReviews,
-      coverImageUrl,
-    });
+    res.json(books);
+  } catch (error) {
+    console.error('Books Generation Error:', error.message);
+    res.status(500).json({ error: 'Failed to generate books' });
   }
-
-  res.json(books);
 });
 
 // Serve static files from the React frontend app
