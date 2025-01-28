@@ -144,7 +144,7 @@ app.get('/api/books', (req, res) => {
 
   for (let i = 0; i < booksPerPage; i++) {
     const title = faker.book.title();
-    const author = faker.person.fullName();
+    const author = faker.name.fullName();
     const publisher = faker.company.name();
     const numLikes = fractionalValue(avgLikes);
     const numReviews = fractionalValue(avgReviews);
@@ -152,7 +152,7 @@ app.get('/api/books', (req, res) => {
     const bookReviews = [];
     for (let r = 0; r < numReviews; r++) {
       bookReviews.push({
-        author: faker.person.fullName(),
+        author: faker.name.fullName(),
         text: faker.lorem.paragraph(),
       });
     }
