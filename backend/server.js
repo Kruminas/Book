@@ -159,7 +159,7 @@ app.get('/api/books', (req, res) => {
 
     let isbn;
     try {
-      isbn = faker.unique(() => faker.helpers.replaceSymbols('###-##########'), { maxRetries: 100 });
+      isbn = faker.helpers.unique(() => faker.helpers.replaceSymbols('###-##########'), { maxRetries: 100 });
     } catch (error) {
       isbn = faker.helpers.replaceSymbols('###-##########');
     }
