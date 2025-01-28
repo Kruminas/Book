@@ -4,10 +4,10 @@ const axios = require('axios');
 const { faker } = require('@faker-js/faker');
 const { v4: uuidv4 } = require('uuid');
 const NodeCache = require('node-cache');
-const path = require('path'); // Add this line
+const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3001; // Updated port configuration
+const PORT = process.env.PORT || 3001;
 
 const translationCache = new NodeCache({ stdTTL: 86400, checkperiod: 20 });
 
@@ -73,7 +73,6 @@ app.post('/api/translate', async (req, res) => {
     const cachedTranslations = cacheKeys.map(key => translationCache.get(key));
 
     const textsToFetch = [];
-    
     const indexesToFetch = [];
 
     cachedTranslations.forEach((translation, index) => {

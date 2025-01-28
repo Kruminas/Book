@@ -1,3 +1,4 @@
+// App.js
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
@@ -62,7 +63,7 @@ function App() {
   const translateText = async (text) => {
     try {
       const response = await axios.post(
-        `${API_BASE}/api/translate`,
+        `${API_BASE}/translate`,
         {
           q: text,
           source: 'en',
@@ -109,7 +110,7 @@ function App() {
         page: currentPage.toString(),
       }).toString();
 
-      const response = await fetch(`${API_BASE}/api/books?${params}`);
+      const response = await fetch(`${API_BASE}/books?${params}`);
       if (!response.ok) {
         throw new Error(`Server error: ${response.status}`);
       }
