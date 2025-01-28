@@ -104,7 +104,14 @@ app.post('/api/translate', async (req, res) => {
       );
 
       const responses = await Promise.all(translationPromises);
-      fetchedTranslations = responses.map(response => response.data.responseData.translatedText);
+      fetchedTranslations = responses.map(response => {
+        if (response.data && response.data.responseData && response.data.responseData.translatedText) {
+          return response.data.responseData.translatedText;
+        } else {
+          console.error('Unexpected translation API response structure:', response.data);
+          return text; // Return original text if translation fails
+        }
+      });
 
       fetchedTranslations.forEach((translatedText, idx) => {
         const cacheKey = cacheKeys[indexesToFetch[idx]];
@@ -165,9 +172,18 @@ app.get('/api/books', (req, res) => {
 
       const bookReviews = [];
       for (let r = 0; r < numReviews; r++) {
+        const reviewAuthor = faker.name.fullName();
+        const reviewText = faker.lorem.paragraph();
+
+        if (!reviewAuthor || !reviewText) {
+          console.error(`Review ${r + 1} for book ${i + 1} is undefined.`);
+          // Skip adding this review
+          continue;
+        }
+
         bookReviews.push({
-          author: faker.name.fullName(),
-          text: faker.lorem.paragraph(),
+          author: reviewAuthor,
+          text: reviewText,
         });
       }
 
@@ -175,24 +191,29 @@ app.get('/api/books', (req, res) => {
       try {
         isbn = faker.helpers.unique(() => faker.helpers.replaceSymbols('###-##########'), { maxRetries: 100 });
       } catch (error) {
+        console.error('Error generating unique ISBN:', error.message);
         isbn = faker.helpers.replaceSymbols('###-##########');
       }
 
       const coverImageUrl = `https://picsum.photos/seed/${isbn}/200/300`;
       const index = i + 1 + (pageNum - 1) * booksPerPage;
 
-      // Debugging Logs
-      if (!title) {
-        console.error(`Book ${index} has undefined title.`);
+      // Handle undefined fields
+      const safeTitle = title || 'Untitled';
+      const safeAuthor = author || 'Unknown Author';
+      const safePublisher = publisher || 'Unknown Publisher';
+
+      if (safeTitle === 'Untitled') {
+        console.warn(`Book ${index} has no title.`);
       }
 
       books.push({
         id: uuidv4(),
         index,
         isbn,
-        title: title || 'Untitled',
-        author: author || 'Unknown Author',
-        publisher: publisher || 'Unknown Publisher',
+        title: safeTitle,
+        author: safeAuthor,
+        publisher: safePublisher,
         likes: numLikes,
         reviews: bookReviews,
         coverImageUrl,
