@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import './i18n';
 import { useTranslation } from 'react-i18next';
+import useDebounce from './useDebounce';
 
 function App() {
   const { t, i18n } = useTranslation();
@@ -18,6 +19,8 @@ function App() {
   const [hasMore, setHasMore] = useState(true);
   const [fetchError, setFetchError] = useState(null);
   const API_BASE = process.env.REACT_APP_API_BASE_URL || '/api';
+
+  const debouncedLikes = useDebounce(likes, 500);
 
   /**
    * @param {Array} booksData
@@ -106,7 +109,7 @@ function App() {
       const params = new URLSearchParams({
         region,
         seed,
-        likes: likes.toString(),
+        likes: debouncedLikes.toString(),
         reviews: reviews.toString(),
         page: currentPage.toString(),
       }).toString();
@@ -116,6 +119,8 @@ function App() {
         throw new Error(`Server error: ${response.status}`);
       }
       const data = await response.json();
+
+      console.log('Fetched Data:', data);
 
       if (!Array.isArray(data)) {
         throw new Error('Invalid data format received from server.');
@@ -136,8 +141,11 @@ function App() {
   };
 
   useEffect(() => {
-    fetchBooks(page);
-  }, [page, region, seed, likes, reviews]);
+    setPage(1);
+    setBooks([]);
+    setHasMore(true);
+    fetchBooks(1);
+  }, [debouncedLikes, region, seed, reviews]);
 
   /**
    * @param {object} e
@@ -233,10 +241,6 @@ function App() {
             value={likes}
             onChange={(e) => {
               setLikes(parseFloat(e.target.value));
-              setPage(1);
-              setBooks([]);
-              setHasMore(true);
-              setFetchError(null);
             }}
           />
         </div>

@@ -1,5 +1,3 @@
-// backend/server.js
-
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -11,15 +9,12 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Initialize cache for translations
 const translationCache = new NodeCache({ stdTTL: 86400, checkperiod: 20 });
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
 /**
- * Get Faker locale based on region
  * @param {string} region
  * @returns {string}
  */
@@ -37,7 +32,6 @@ function getFakerLocale(region) {
 }
 
 /**
- * Simple hash function for seeding
  * @param {string} str
  * @returns {number}
  */
@@ -50,7 +44,6 @@ function hashCode(str) {
 }
 
 /**
- * Calculate fractional value based on average
  * @param {number} avg
  * @returns {number}
  */
@@ -64,9 +57,6 @@ function fractionalValue(avg) {
   return val;
 }
 
-/**
- * Translation Endpoint
- */
 app.post('/api/translate', async (req, res) => {
   const { q, source, target } = req.body;
 
@@ -136,9 +126,6 @@ app.post('/api/translate', async (req, res) => {
   }
 });
 
-/**
- * Books Endpoint
- */
 app.get('/api/books', (req, res) => {
   const {
     seed = 'default',
@@ -156,23 +143,14 @@ app.get('/api/books', (req, res) => {
     const combinedSeed = `${seed}-${pageNum}`;
     const fakerLocale = getFakerLocale(region);
 
-    // Set Faker locale and seed
     faker.locale = fakerLocale;
     faker.seed(hashCode(combinedSeed));
-
-    // Removed the faker.book.title() check as it's no longer used
-    // console.log('Faker Book Module:', faker.book);
-
-    // if (!faker.book || typeof faker.book.title !== 'function') {
-    //   console.error('faker.book.title is not a function. Please check the Faker installation and version.');
-    //   return res.status(500).json({ error: 'Faker book module is not available.' });
-    // }
 
     const booksPerPage = 20;
     const books = [];
 
     for (let i = 0; i < booksPerPage; i++) {
-      const title = faker.lorem.sentence(); // Using lorem.sentence() instead of book.title()
+      const title = faker.lorem.sentence();
       console.log(`Generated Title: ${title}`);
       const author = faker.name.fullName();
       const publisher = faker.company.name();
@@ -195,13 +173,7 @@ app.get('/api/books', (req, res) => {
         });
       }
 
-      let isbn;
-      try {
-        isbn = faker.helpers.unique(() => faker.helpers.replaceSymbols('###-##########'), { maxRetries: 100 });
-      } catch (error) {
-        console.error('Error generating unique ISBN:', error.message);
-        isbn = faker.helpers.replaceSymbols('###-##########');
-      }
+      const isbn = faker.helpers.replaceSymbols('###-##########') + `-${i + 1}`;
 
       const coverImageUrl = `https://picsum.photos/seed/${isbn}/200/300`;
       const index = i + 1 + (pageNum - 1) * booksPerPage;
@@ -236,42 +208,8 @@ app.get('/api/books', (req, res) => {
   }
 });
 
-// Helper Functions
-function getFakerLocale(region) {
-  switch (region) {
-    case 'en':
-      return 'en_US';
-    case 'fr':
-      return 'fr';
-    case 'de':
-      return 'de';
-    default:
-      return 'en_US';
-  }
-}
-
-function hashCode(str) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (Math.imul(31, hash) + str.charCodeAt(i)) | 0;
-  }
-  return hash;
-}
-
-function fractionalValue(avg) {
-  const intPart = Math.floor(avg);
-  const fraction = avg - intPart;
-  let val = intPart;
-  if (Math.random() < fraction) {
-    val++;
-  }
-  return val;
-}
-
-// Serve static files from the React frontend app
 app.use(express.static(path.join(__dirname, '../frontend/build')));
 
-// The "catchall" handler: for any request that doesn't match an API route, send back React's index.html file.
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
 });
