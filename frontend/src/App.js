@@ -1,5 +1,3 @@
-// frontend/src/App.js
-
 import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
@@ -18,11 +16,10 @@ function App() {
   const [books, setBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [fetchError, setFetchError] = useState(null); // New state for error messages
+  const [fetchError, setFetchError] = useState(null);
   const API_BASE = process.env.REACT_APP_API_BASE_URL || '/api';
 
   /**
-   * Translate book data based on selected region
    * @param {Array} booksData
    * @returns {Array}
    */
@@ -59,7 +56,6 @@ function App() {
   };
 
   /**
-   * Translate a single text
    * @param {string} text
    * @returns {string}
    */
@@ -85,32 +81,27 @@ function App() {
   };
 
   /**
-   * Generate a random seed
    * @returns {string}
    */
   const generateRandomSeed = () => {
     return Math.floor(Math.random() * 10000000).toString();
   };
 
-  /**
-   * Handle random seed generation
-   */
   const handleRandomSeed = () => {
     const randomSeed = generateRandomSeed();
     setSeed(randomSeed);
     setPage(1);
     setBooks([]);
     setHasMore(true);
-    setFetchError(null); // Reset error on new seed
+    setFetchError(null);
   };
 
   /**
-   * Fetch books from the backend
    * @param {number} currentPage
    */
   const fetchBooks = async (currentPage) => {
     setIsLoading(true);
-    setFetchError(null); // Reset error before fetching
+    setFetchError(null);
     try {
       const params = new URLSearchParams({
         region,
@@ -138,22 +129,17 @@ function App() {
       }
     } catch (error) {
       console.error('Error fetching books:', error);
-      setFetchError(error.message); // Set error message
+      setFetchError(error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
-  /**
-   * Effect to fetch books when dependencies change
-   */
   useEffect(() => {
     fetchBooks(page);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, region, seed, likes, reviews]);
 
   /**
-   * Handle infinite scrolling
    * @param {object} e
    */
   const handleScroll = (e) => {
@@ -166,7 +152,6 @@ function App() {
   };
 
   /**
-   * Change language/region
    * @param {string} lng
    */
   const changeLanguage = (lng) => {
@@ -175,7 +160,7 @@ function App() {
     setPage(1);
     setBooks([]);
     setHasMore(true);
-    setFetchError(null); // Reset error on language change
+    setFetchError(null);
   };
 
   return (
@@ -219,7 +204,7 @@ function App() {
                 setPage(1);
                 setBooks([]);
                 setHasMore(true);
-                setFetchError(null); // Reset error on seed change
+                setFetchError(null);
               }}
               placeholder={t('filters.enter_seed')}
             />
@@ -251,7 +236,7 @@ function App() {
               setPage(1);
               setBooks([]);
               setHasMore(true);
-              setFetchError(null); // Reset error on likes change
+              setFetchError(null);
             }}
           />
         </div>
@@ -272,7 +257,7 @@ function App() {
               setPage(1);
               setBooks([]);
               setHasMore(true);
-              setFetchError(null); // Reset error on reviews change
+              setFetchError(null);
             }}
             placeholder={t('filters.enter_reviews')}
           />
@@ -324,7 +309,6 @@ function App() {
 }
 
 /**
- * BookRow Component
  * @param {object} props
  * @returns JSX.Element
  */

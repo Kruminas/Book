@@ -1,5 +1,3 @@
-// backend/server.js
-
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -11,15 +9,12 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Initialize cache for translations
 const translationCache = new NodeCache({ stdTTL: 86400, checkperiod: 20 });
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
 /**
- * Get Faker locale based on region
  * @param {string} region
  * @returns {string}
  */
@@ -37,7 +32,6 @@ function getFakerLocale(region) {
 }
 
 /**
- * Simple hash function for seeding
  * @param {string} str
  * @returns {number}
  */
@@ -50,7 +44,6 @@ function hashCode(str) {
 }
 
 /**
- * Calculate fractional value based on average
  * @param {number} avg
  * @returns {number}
  */
@@ -63,10 +56,6 @@ function fractionalValue(avg) {
   }
   return val;
 }
-
-/**
- * Translation Endpoint
- */
 app.post('/api/translate', async (req, res) => {
   const { q, source, target } = req.body;
 
@@ -109,7 +98,7 @@ app.post('/api/translate', async (req, res) => {
           return response.data.responseData.translatedText;
         } else {
           console.error('Unexpected translation API response structure:', response.data);
-          return text; // Return original text if translation fails
+          return text;
         }
       });
 
@@ -136,9 +125,6 @@ app.post('/api/translate', async (req, res) => {
   }
 });
 
-/**
- * Books Endpoint
- */
 app.get('/api/books', (req, res) => {
   const {
     seed = 'default',
@@ -156,14 +142,11 @@ app.get('/api/books', (req, res) => {
     const combinedSeed = `${seed}-${pageNum}`;
     const fakerLocale = getFakerLocale(region);
 
-    // Set Faker locale and seed
     faker.locale = fakerLocale;
     faker.seed(hashCode(combinedSeed));
 
-    // Log the faker.book object
     console.log('Faker Book Module:', faker.book);
 
-    // Check if faker.book is defined
     if (!faker.book || typeof faker.book.title !== 'function') {
       console.error('faker.book.title is not a function. Please check the Faker installation and version.');
       return res.status(500).json({ error: 'Faker book module is not available.' });
@@ -173,8 +156,8 @@ app.get('/api/books', (req, res) => {
     const books = [];
 
     for (let i = 0; i < booksPerPage; i++) {
-      const title = faker.book.title();
-      console.log(`Generated Title: ${title}`); // Optional: Remove in production
+      const title = faker.lorem.sentence(); // const title = faker.book.title();
+      console.log(`Generated Title: ${title}`);
       const author = faker.name.fullName();
       const publisher = faker.company.name();
       const numLikes = fractionalValue(avgLikes);
@@ -185,10 +168,8 @@ app.get('/api/books', (req, res) => {
         const reviewAuthor = faker.name.fullName();
         const reviewText = faker.lorem.paragraph();
 
-        // Log review details
         if (!reviewAuthor || !reviewText) {
           console.error(`Review ${r + 1} for book ${i + 1} is undefined.`);
-          // Skip adding this review
           continue;
         }
 
@@ -209,7 +190,6 @@ app.get('/api/books', (req, res) => {
       const coverImageUrl = `https://picsum.photos/seed/${isbn}/200/300`;
       const index = i + 1 + (pageNum - 1) * booksPerPage;
 
-      // Handle undefined fields
       const safeTitle = title || 'Untitled';
       const safeAuthor = author || 'Unknown Author';
       const safePublisher = publisher || 'Unknown Publisher';
@@ -231,7 +211,6 @@ app.get('/api/books', (req, res) => {
       });
     }
 
-    // Log generated books for debugging
     console.log(`Generated ${books.length} books for page ${pageNum}`);
 
     res.json(books);
@@ -241,7 +220,6 @@ app.get('/api/books', (req, res) => {
   }
 });
 
-// Helper Functions
 function getFakerLocale(region) {
   switch (region) {
     case 'en':
@@ -273,10 +251,8 @@ function fractionalValue(avg) {
   return val;
 }
 
-// Serve static files from the React frontend app
 app.use(express.static(path.join(__dirname, '../frontend/build')));
 
-// The "catchall" handler: for any request that doesn't match an API route, send back React's index.html file.
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
 });
